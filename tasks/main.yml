@@ -1,0 +1,107 @@
+---
+# tasks file for ansible-role-containerd
+- name: Configure Security-enhanced
+  block:
+  - name: Set selinux permissive
+    ansible.posix.selinux:
+      policy: targeted
+      state: permissive
+    when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Install pre-requisites for containerd
+  block:
+    - name: Install dependencies for Debian family
+      include_tasks: packages/debian.yml
+      when: ansible_facts['os_family'] == 'Debian'
+    - name: Install default package
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+      loop: ['unzip']
+
+- name: Create download folders
+  ansible.builtin.file:
+    path: ~/Downloads
+    state: directory
+    mode: '0755'
+
+- name: Install containerd packages
+  block:
+    - name: Download containerd package
+      get_url:
+        url: https://github.com/containerd/containerd/releases/download/v{{ containerd.version }}/containerd-{{ containerd.version }}-{{ ansible_system | lower }}-{{ containerd.architecture }}.tar.gz
+        dest: ~/Downloads/containerd.tar.gz
+        mode: '0755'
+    - name: Unarchive containerd
+      ansible.builtin.unarchive:
+        src: ~/Downloads/containerd.tar.gz
+        dest: /usr/local
+        remote_src: yes
+    - name: Create a directory for systemd config
+      ansible.builtin.file:
+        path: /usr/local/lib/systemd/system
+        state: directory
+        mode: '0755'
+    - name: Add systemd containerd config
+      get_url:
+        url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+        dest: /usr/local/lib/systemd/system/containerd.service
+        mode: '0755'
+    - name: Reload systemd config for containerd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+- name: Install runc packages
+  block:
+    - name: Download runc package
+      get_url:
+        url: https://github.com/opencontainers/runc/releases/download/v{{ runc.version }}/runc.{{ runc.architecture }}
+        dest: ~/Downloads/runc.amd64
+        mode: '0755'
+    - name: Install
+      ansible.builtin.shell: install -m 755 ~/Downloads/runc.amd64 /usr/local/sbin/runc
+
+- name: Install cni plugin packages
+  block:
+    - name: Create a directory for store cni
+      ansible.builtin.file:
+        path: /opt/cni/bin
+        state: directory
+        mode: '0755'
+    - name: Download cni plugin package
+      get_url:
+        url: https://github.com/containernetworking/plugins/releases/download/v{{ cni_plugin.version }}/cni-plugins-{{ ansible_system | lower }}-{{ cni_plugin.architecture }}-v{{ cni_plugin.version }}.tgz
+        dest: ~/Downloads/cni-plugin.tgz
+        mode: '0755'
+    - name: Unarchive containerd
+      ansible.builtin.unarchive:
+        src: ~/Downloads/cni-plugin.tgz
+        dest: /opt/cni/bin
+        remote_src: yes
+
+- name: Install nerdctl for containerd client
+  block:
+    - name: Download nerdctr
+      get_url:
+        url: https://github.com/containerd/nerdctl/releases/download/v{{ containerd.nerdctl_version }}/nerdctl-{{ containerd.nerdctl_version }}-{{ ansible_system | lower }}-{{ containerd.architecture }}.tar.gz
+        dest: ~/Downloads/nerdctl.tar.gz
+        mode: '0755'
+    - name: Unarchive containerd
+      ansible.builtin.unarchive:
+        src: ~/Downloads/nerdctl.tar.gz
+        dest: /usr/bin
+        remote_src: yes
+    - name: Create a symbolic link
+      ansible.builtin.file:
+        src: /usr/bin/nerdctl
+        dest: /usr/local/bin/nerdctl
+        state: link
+
+- name: Systemctl for containerd
+  block:
+    - name: enabled-containerd
+      ansible.builtin.systemd:
+        name: containerd
+        enabled: yes
+        state: started
+        masked: no

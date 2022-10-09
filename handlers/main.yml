@@ -1,0 +1,11 @@
+---
+# handlers file for ansible-role-containerd
+- name: enabled-containerd
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: yes
+    masked: no
+- name: reload-containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: reloaded

@@ -1,0 +1,27 @@
+galaxy_info:
+  role_name: containerd
+  author: dimasm93
+  description: Containerd for linux x64_86
+  company: PT. Tabeldata Information
+
+  license: MIT
+  min_ansible_version: 2.9
+
+  platforms:
+  - name: Fedora
+    versions:
+    - 25
+  - name: EL
+    versions:
+      - 7
+      - 8
+  - name: Ubuntu
+    versions:
+      - focal
+      - bionic
+
+  galaxy_tags:
+    - containers
+    - system
+
+dependencies: []

@@ -1,0 +1,2 @@
+[containerd]
+k8s-master  ansible_host=192.168.88.103 ansible_user=root
