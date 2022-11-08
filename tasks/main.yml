@@ -35,8 +35,18 @@
     - name: Unarchive containerd
       ansible.builtin.unarchive:
         src: ~/Downloads/containerd.tar.gz
-        dest: /usr/local
+        dest: /usr
         remote_src: yes
+    - name: symbolic link containerd file
+      ansible.builtin.file:
+        src: /usr/bin/containerd
+        dest: /usr/local/bin/containerd
+        state: link
+    - name: symbolic link ctr file
+      ansible.builtin.file:
+        src: /usr/bin/ctr
+        dest: /usr/local/bin/ctr
+        state: link
     - name: Create a directory for systemd config
       ansible.builtin.file:
         path: /usr/local/lib/systemd/system
@@ -140,7 +150,7 @@
         src: ~/Downloads/nerdctl.tar.gz
         dest: /usr/bin
         remote_src: yes
-    - name: Create a symbolic link
+    - name: symbolic link nerdctl file
       ansible.builtin.file:
         src: /usr/bin/nerdctl
         dest: /usr/local/bin/nerdctl
