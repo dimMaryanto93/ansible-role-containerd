@@ -70,7 +70,7 @@
       register: containerd_dir
 
     - name: Get defaults from containerd.
-      command: containerd config default
+      command: /usr/local/bin/containerd config default
       changed_when: false
       register: containerd_config_default
 
