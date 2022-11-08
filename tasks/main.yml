@@ -107,7 +107,8 @@
         dest: ~/Downloads/runc.amd64
         mode: '0755'
     - name: Install
-      ansible.builtin.shell: install -m 755 ~/Downloads/runc.amd64 /usr/local/sbin/runc
+      ansible.builtin.shell: 
+        executable: install -m 755 ~/Downloads/runc.amd64 /usr/local/sbin/runc
 
 - name: Install cni plugin packages
   block:
