@@ -155,6 +155,24 @@
         dest: /usr/local/bin/nerdctl
         state: link
 
+- name: Install crictl for containerd client
+  block:
+    - name: Download crictl
+      get_url:
+        url: https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ crictl.version }}/crictl-{{ crictl.version }}-{{ ansible_system | lower }}-{{ crictl.architecture }}.tar.gz
+        dest: ~/Downloads/crictl.tar.gz
+        mode: '0755'
+    - name: Unarchive containerd
+      ansible.builtin.unarchive:
+        src: ~/Downloads/crictl.tar.gz
+        dest: /usr/bin
+        remote_src: yes
+    - name: symbolic link nerdctl file
+      ansible.builtin.file:
+        src: /usr/bin/crictl
+        dest: /usr/local/bin/crictl
+        state: link
+
 - name: Systemctl for containerd
   block:
     - name: enabled-containerd
